@@ -16,13 +16,15 @@ class HomeScreen extends StatefulWidget {
     required this.saved,
     required this.onSaved,
     required this.onSearch,
-     required this.onListProperty,
+    required this.onListProperty,
+    required this.onMenuTap,
   });
 
   final Set<Property> saved;
   final VoidCallback onSaved;
   final ValueChanged<Future<List<Property>>> onSearch;
   final VoidCallback onListProperty;
+  final VoidCallback? onMenuTap;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -57,19 +59,18 @@ class _HomeScreenState extends State<HomeScreen> {
           // LOCATION HEADER
           Row(
             children: [
-              Container(
-                height: 48,
-                width: 48,
-                decoration: BoxDecoration(
-                  color: AppTheme.moss,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(
-                  Icons.location_on_rounded,
-                  color: AppTheme.forest,
-                  size: 26,
-                ),
-              ),
+             IconButton(
+  onPressed: widget.onMenuTap,
+  icon: const Icon(
+    Icons.menu_rounded,
+    color: AppTheme.forest,
+    size: 28,
+  ),
+  style: IconButton.styleFrom(
+    backgroundColor: AppTheme.moss,
+    fixedSize: const Size(48, 48),
+  ),
+),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
