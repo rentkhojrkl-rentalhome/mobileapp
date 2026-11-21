@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import 'services/auth_service.dart';
@@ -6,6 +5,7 @@ import 'core/theme/app_theme.dart';
 import 'models/property.dart';
 
 import 'screens/login_screen.dart';
+import 'screens/splash_screen.dart';
 import 'core/widgets/app_drawer.dart';
 import 'features/tenant/home/home_screen.dart';
 import 'features/tenant/explore/search_screen.dart';
@@ -18,9 +18,7 @@ import 'features/tenant/requirements/my_requirements_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await AuthService.instance.restoreSession();
-
   runApp(const RentKhojApp());
 }
 
@@ -33,7 +31,41 @@ class RentKhojApp extends StatelessWidget {
       title: 'RentKhojRKL',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const AuthGate(),
+      home: const SplashGate(),
+    );
+  }
+}
+
+/// Shows the exact branded artwork, then opens the existing authentication
+/// gate. Session restoration still happens before runApp, as before.
+class SplashGate extends StatefulWidget {
+  const SplashGate({super.key});
+
+  @override
+  State<SplashGate> createState() => _SplashGateState();
+}
+
+class _SplashGateState extends State<SplashGate> {
+  bool _finished = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future<void>.delayed(const Duration(milliseconds: 4600), () {
+      if (!mounted) return;
+      setState(() => _finished = true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 650),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      child: _finished
+          ? const AuthGate(key: ValueKey('auth-gate'))
+          : const SplashScreen(key: ValueKey('brand-splash')),
     );
   }
 }
@@ -60,7 +92,6 @@ class _AuthGateState extends State<AuthGate> {
   Future<void> _checkSavedSession() async {
     if (!AuthService.instance.isLoggedIn) {
       if (!mounted) return;
-
       setState(() {
         _checking = false;
         _authenticated = false;
@@ -77,7 +108,6 @@ class _AuthGateState extends State<AuthGate> {
       }
 
       if (!mounted) return;
-
       setState(() {
         _userRole = role;
         _authenticated = true;
@@ -85,9 +115,7 @@ class _AuthGateState extends State<AuthGate> {
       });
     } catch (_) {
       await AuthService.instance.logout();
-
       if (!mounted) return;
-
       setState(() {
         _authenticated = false;
         _checking = false;
@@ -105,7 +133,6 @@ class _AuthGateState extends State<AuthGate> {
       }
 
       if (!mounted) return;
-
       setState(() {
         _userRole = role;
         _authenticated = true;
@@ -113,14 +140,11 @@ class _AuthGateState extends State<AuthGate> {
       });
     } catch (e) {
       await AuthService.instance.logout();
-
       if (!mounted) return;
-
       setState(() {
         _authenticated = false;
         _error = e.toString().replaceFirst('Exception: ', '');
       });
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(_error!)),
       );
@@ -129,7 +153,6 @@ class _AuthGateState extends State<AuthGate> {
 
   void _handleLogout() {
     if (!mounted) return;
-
     setState(() {
       _authenticated = false;
       _userRole = null;
@@ -146,11 +169,7 @@ class _AuthGateState extends State<AuthGate> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.home_rounded,
-                size: 58,
-                color: Color(0xFF07583C),
-              ),
+              Icon(Icons.home_rounded, size: 58, color: Color(0xFF07583C)),
               SizedBox(height: 18),
               Text(
                 'RentKhojRKL',
@@ -161,9 +180,7 @@ class _AuthGateState extends State<AuthGate> {
                 ),
               ),
               SizedBox(height: 20),
-              CircularProgressIndicator(
-                color: Color(0xFF07583C),
-              ),
+              CircularProgressIndicator(color: Color(0xFF07583C)),
             ],
           ),
         ),
@@ -204,9 +221,7 @@ class _AppShellState extends State<AppShell> {
   late String userRole;
 
   final saved = <Property>{};
-
-  final GlobalKey<ScaffoldState> _scaffoldKey =
-      GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -219,34 +234,25 @@ class _AppShellState extends State<AppShell> {
   }
 
   void _selectDrawerTab(int index) {
-    setState(() {
-      tab = index;
-    });
+    setState(() => tab = index);
   }
 
   void _openNeedRoom() {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const NeedRoomScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const NeedRoomScreen()),
     );
   }
 
   void _openMyRequirements() {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const MyRequirementsScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const MyRequirementsScreen()),
     );
   }
 
   void _updateRole(String? role) {
     if (role != null && mounted) {
-      setState(() {
-        userRole = role.toLowerCase();
-      });
+      setState(() => userRole = role.toLowerCase());
     }
-
     if (role == null && !AuthService.instance.isLoggedIn) {
       widget.onLogout();
     }
@@ -254,17 +260,13 @@ class _AppShellState extends State<AppShell> {
 
   void _handleListProperty() {
     if (userRole == 'owner') {
-      setState(() {
-        tab = 1;
-      });
+      setState(() => tab = 1);
       return;
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text(
-          'Property listing is available for Owner accounts.',
-        ),
+        content: Text('Property listing is available for Owner accounts.'),
       ),
     );
   }
@@ -288,17 +290,12 @@ class _AppShellState extends State<AppShell> {
         onListProperty: _handleListProperty,
         onMenuTap: _openDrawer,
       ),
-
       if (isOwner)
         OwnerDashboardScreen(onMenuTap: _openDrawer)
       else
         SavedScreen(saved: saved),
-
       const MessagesScreen(),
-
-      ProfileScreen(
-        onRoleChanged: _updateRole,
-      ),
+      ProfileScreen(onRoleChanged: _updateRole),
     ];
 
     return Scaffold(
@@ -314,19 +311,12 @@ class _AppShellState extends State<AppShell> {
       body: SafeArea(
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 220),
-          child: KeyedSubtree(
-            key: ValueKey(tab),
-            child: pages[tab],
-          ),
+          child: KeyedSubtree(key: ValueKey(tab), child: pages[tab]),
         ),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: tab,
-        onDestinationSelected: (value) {
-          setState(() {
-            tab = value;
-          });
-        },
+        onDestinationSelected: (value) => setState(() => tab = value),
         indicatorColor: const Color(0xFFCAEACB),
         destinations: [
           const NavigationDestination(
@@ -335,16 +325,8 @@ class _AppShellState extends State<AppShell> {
             label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(
-              isOwner
-                  ? Icons.add_home_work_outlined
-                  : Icons.favorite_border,
-            ),
-            selectedIcon: Icon(
-              isOwner
-                  ? Icons.add_home_work
-                  : Icons.favorite,
-            ),
+            icon: Icon(isOwner ? Icons.add_home_work_outlined : Icons.favorite_border),
+            selectedIcon: Icon(isOwner ? Icons.add_home_work : Icons.favorite),
             label: isOwner ? 'Dashboard' : 'Saved',
           ),
           const NavigationDestination(
@@ -362,3 +344,4 @@ class _AppShellState extends State<AppShell> {
     );
   }
 }
+
